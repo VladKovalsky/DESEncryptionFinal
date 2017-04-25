@@ -6,10 +6,10 @@
 
 class Output {
 public:
-	Output(std::string cipherText);
+	Output(std::string cipherText, std::string filePath);
 };
 
-Output::Output(std::string cipherText) {
-	std::ofstream outputFile("cipher.txt");
+Output::Output(std::string cipherText, std::string filePath) {
+	std::ofstream outputFile(filePath);
 	outputFile << cipherText;
 }

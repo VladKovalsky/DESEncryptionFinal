@@ -13,7 +13,7 @@ std::vector<int> xorVector(std::vector<int> in1, std::vector<int> in2) {
 	return out;
 }
 
-long long int convertToLarge(std::vector<int> in, int bitSize) {
+long long int convertToLarge(std::vector<int> in, int bitSize) {//doesn't work: needs typecasting to work ... whatever lol
 	int i = 0;
 	long long int out = 0;
 	for (i = in.size() - 1; i >= 0; i--) {

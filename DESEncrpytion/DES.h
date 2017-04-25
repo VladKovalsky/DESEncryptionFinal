@@ -8,10 +8,10 @@ class DES {
 private:
 	std::string cipherText;
 public:
-	 DES(std::string nPlainText, std::string nKey);
+	 DES(std::string nPlainText, std::string nKey, int decrypt);
 	 std::vector<int> convertKey(std::string nKeyText);
-	 std::vector<std::vector<int>> convertPT(std::string nPlainText);
-	 std::vector<int> roundPerm(std::vector<int> left, std::vector<int> right, std::vector<int> key, int round);
+	 std::vector<std::vector<int>> convertPT(std::string nPlainText, int decrypt);
+	 std::vector<int> roundPerm(std::vector<int> left, std::vector<int> right, std::vector<std::vector<int>> keySchedule, int round, int keyRound, int decrypt);
 	 std::vector<int> feistelFun(std::vector<int> halfBlack, std::vector<int> key);
 	 std::vector<int> expand(std::vector<int> halfBlock);
 	 std::vector<int> SBoxExpansion(std::vector<int> block);
@@ -20,10 +20,11 @@ public:
 	 std::vector<int> IPINV(std::vector<int> block);
 	 std::vector<int> PC1(std::vector<int> block);
 	 std::vector<int> PC2(std::vector<int> block);
-	 void createCipherText(std::vector<std::vector<int>> blocks);
+	 void createCipherText(std::vector<std::vector<int>> blocks, int decrypt);
 	 std::vector<int> keyShift(std::vector<int>, int round);
+	 std::vector<std::vector<int>> createKeySchedule(std::vector<int> key);
 
-	std::string getCipherText() { return cipherText; };
+	 std::string DES::getCipherText() { return cipherText; };
 };
  std::vector<int> DES::PC1(std::vector<int> block) {
 	int PC1Table[56] = {
@@ -101,54 +102,78 @@ public:
 	return blockOut;
 }
 
-DES::DES(std::string nPlainText, std::string nKey) {
-	std::vector<std::vector<int>> blocks = convertPT(nPlainText);
+DES::DES(std::string nPlainText, std::string nKey, int decrypt) {
+	std::vector<std::vector<int>> blocks = convertPT(nPlainText, decrypt);
 	std::vector<int> key = convertKey(nKey);
 	std::vector<std::vector<int>> cipherBlocks;
 
 	int i = 0;
 	std::vector<int> * temp;
-
-	key = PC1(key);
+	std::vector<std::vector<int>> keySchedule = createKeySchedule(key);
 	for (i = 0; i < blocks.size(); i++) {
 		temp = new std::vector<int>;
 		*temp = IP(blocks.at(i));
-		*temp = roundPerm(std::vector<int>(temp->begin(), temp->begin() + 32), std::vector<int>(temp->begin() + 32, temp->end()), key, 16);
+		*temp = roundPerm(std::vector<int>(temp->begin(), temp->begin() + 32), std::vector<int>(temp->begin() + 32, temp->end()), keySchedule, 0, decrypt*15, decrypt); //keyRound argument is 0 if decrypt is false, 15 if decrypt is true (easy way)
 		*temp = IPINV(*temp);
 		cipherBlocks.push_back(*temp);
 	}
 
-	createCipherText(cipherBlocks);
+	createCipherText(cipherBlocks, decrypt);
 }
 
-void DES::createCipherText(std::vector<std::vector<int>> blocks) {
+void DES::createCipherText(std::vector<std::vector<int>> blocks, int decrypt) {
 	int i = 0;
 	int j = 0;
 	int temp = 0;
 	cipherText.clear();
-	for (i = 0; i < blocks.size(); i++) {
-		temp = 0;
-		for (j = 0; j < blocks[i].size(); j++) {
-			temp |= blocks[i][j] * (int)pow(2, 7 - (j % 8));
+	if (!decrypt) {
+		for (i = 0; i < blocks.size(); i++) {
+			temp = 0;
+			for (j = 0; j < blocks[i].size(); j++) {
+				cipherText.push_back(std::to_string(blocks[i][j])[0]);
+			}
+		}
+	}
+	else {
+		for (i = 0; i < blocks.size(); i++) {
+			temp = 0;
+			for (j = 0; j < blocks[i].size(); j++) {
+				temp |= blocks[i][j] * (int)pow(2, 7 - (j % 8));
 
-			if ((j + 1) % 8 == 0) {
-				cipherText.push_back(temp);
-				temp = 0;
+				if ((j + 1) % 8 == 0) {
+					cipherText.push_back(temp);
+					temp = 0;
+				}
 			}
 		}
 	}
 }
 
- std::vector<int> DES::roundPerm(std::vector<int> left,  std::vector<int> right,  std::vector<int> key, int round) {
-	 std::vector<int> temp;
-	if (round > 0) {
-		key = keyShift(key, round);
-		left = xorVector(left, feistelFun(right, PC2(key)));
-		temp = roundPerm(right, left, key, round - 1);
+std::vector<std::vector<int>> DES::createKeySchedule(std::vector<int> key) {
+	key = PC1(key);
+	std::vector<std::vector<int>> keySchedule;
+	int i = 0;
+	for (i = 0; i < 16; i++) {
+		key = keyShift(key, i + 1);
+		keySchedule.push_back(PC2(key));
 	}
-	else {
-		right.insert(right.end(), left.begin(), left.end());
-		return right;
+
+	return keySchedule;
+}
+
+ std::vector<int> DES::roundPerm(std::vector<int> left,  std::vector<int> right,  std::vector<std::vector<int>> keySchedule, int round, int keyRound, int decrypt) {
+	std::vector<int> temp;
+	if (round < 16) {
+		left = xorVector(left, feistelFun(right, keySchedule[keyRound]));
+		if (!decrypt) keyRound++;
+		else keyRound--;
+
+		if (round == 15) {//16th round
+			left.insert(left.end(), right.begin(), right.end());
+			return left;
+		}
+
+		temp = roundPerm(right, left, keySchedule, round + 1, keyRound, decrypt);
 	}
 	
 	return temp;
@@ -162,15 +187,17 @@ void DES::createCipherText(std::vector<std::vector<int>> blocks) {
 	case 8:
 	case 1:
 		shiftAmount = 1;
+		break;
 	default:
 		shiftAmount = 2;
+		break;
 	}
 
 	std::vector<int> leftKey = rotateLeft(std::vector<int>(key.begin(), key.begin() + 28), shiftAmount);
 	std::vector<int> rightKey = rotateLeft(std::vector<int>(key.begin() + 28, key.end()), shiftAmount);
 
 	key = leftKey;
-	key.insert(key.begin(), rightKey.begin(), rightKey.end());
+	key.insert(key.end(), rightKey.begin(), rightKey.end());
 
 	return key;
 }
@@ -179,6 +206,7 @@ void DES::createCipherText(std::vector<std::vector<int>> blocks) {
 	int i = 0;
 	std::vector<int> key;
 	for (i = 0; i < 64; i++) {
+
 		if (i < nKeyText.size() * 8) {
 			key.push_back(nKeyText.at(i / 8) >> (7 - (i % 8)) & 1);
 		}
@@ -188,21 +216,37 @@ void DES::createCipherText(std::vector<std::vector<int>> blocks) {
 	return key;
 }
 
-std::vector<std::vector<int>> DES::convertPT(std::string nPlainText) {
+std::vector<std::vector<int>> DES::convertPT(std::string nPlainText, int decrypt) {
 	int i = 0;
 	std::vector<std::vector<int>> blocks;
 	std::vector<int> * binary = new std::vector<int>;
-	for (i = 0; i <= (nPlainText.size() +  8 - nPlainText.size() % 8) * 8; i++) {
-		if (i != 0 && i % 64 == 0) {
-			blocks.push_back(*binary);
-			binary = new std::vector<int>;
-		}
+	if (!decrypt) {
+		for (i = 0; i <= (nPlainText.size() + 8 - nPlainText.size() % 8) * 8; i++) {
+			if (i != 0 && i % 64 == 0) {
+				blocks.push_back(*binary);
+				binary = new std::vector<int>;
+			}
 
-		if (i < nPlainText.size() * 8) {
-			binary->push_back(nPlainText.at(i / 8) >> (7 - (i % 8)) & 1);
+			if (i < nPlainText.size() * 8) {
+				binary->push_back(nPlainText.at(i / 8) >> (7 - (i % 8)) & 1);
+			}
+			else
+				binary->push_back(0);
 		}
-		else
-			binary->push_back(0);
+	}
+	else {
+		for (i = 0; i < nPlainText.size(); i++) {
+			if (i != 0 && i % 64 == 0) {
+				blocks.push_back(*binary);
+				binary = new std::vector<int>;
+			}
+
+			if ((int)nPlainText[i] - 48 != 0 || (int)nPlainText[i] - 48 != 1) {
+				blocks.clear();
+				return blocks;
+			}
+			binary->push_back((int)nPlainText[i] - 48);
+		}
 	}
 
 	return blocks;
