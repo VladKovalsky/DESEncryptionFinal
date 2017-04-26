@@ -20,7 +20,7 @@ public:
 	 std::vector<int> IPINV(std::vector<int> block);
 	 std::vector<int> PC1(std::vector<int> block);
 	 std::vector<int> PC2(std::vector<int> block);
-	 void createCipherText(std::vector<std::vector<int>> blocks, int decrypt);
+	 void blocksToString(std::vector<std::vector<int>> blocks, int decrypt);
 	 std::vector<int> keyShift(std::vector<int>, int round);
 	 std::vector<std::vector<int>> createKeySchedule(std::vector<int> key);
 
@@ -118,10 +118,10 @@ DES::DES(std::string nPlainText, std::string nKey, int decrypt) {
 		cipherBlocks.push_back(*temp);
 	}
 
-	createCipherText(cipherBlocks, decrypt);
+	blocksToString(cipherBlocks, decrypt);
 }
 
-void DES::createCipherText(std::vector<std::vector<int>> blocks, int decrypt) {
+void DES::blocksToString(std::vector<std::vector<int>> blocks, int decrypt) {
 	int i = 0;
 	int j = 0;
 	int temp = 0;
