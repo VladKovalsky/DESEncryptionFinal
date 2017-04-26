@@ -10,6 +10,6 @@ public:
 };
 
 Output::Output(std::string cipherText, std::string filePath) {
-	std::ofstream outputFile(filePath);
+	std::ofstream outputFile(filePath, std::ofstream::binary);
 	outputFile << cipherText;
 }

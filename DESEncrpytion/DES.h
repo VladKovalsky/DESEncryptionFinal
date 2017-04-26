@@ -10,7 +10,7 @@ private:
 public:
 	 DES(std::string nPlainText, std::string nKey, int decrypt);
 	 std::vector<int> convertKey(std::string nKeyText);
-	 std::vector<std::vector<int>> convertPT(std::string nPlainText, int decrypt);
+	 std::vector<std::vector<int>> convertPT(std::string nPlainText);
 	 std::vector<int> roundPerm(std::vector<int> left, std::vector<int> right, std::vector<std::vector<int>> keySchedule, int round, int keyRound, int decrypt);
 	 std::vector<int> feistelFun(std::vector<int> halfBlack, std::vector<int> key);
 	 std::vector<int> expand(std::vector<int> halfBlock);
@@ -103,7 +103,7 @@ public:
 }
 
 DES::DES(std::string nPlainText, std::string nKey, int decrypt) {
-	std::vector<std::vector<int>> blocks = convertPT(nPlainText, decrypt);
+	std::vector<std::vector<int>> blocks = convertPT(nPlainText);
 	std::vector<int> key = convertKey(nKey);
 	std::vector<std::vector<int>> cipherBlocks;
 
@@ -126,24 +126,14 @@ void DES::createCipherText(std::vector<std::vector<int>> blocks, int decrypt) {
 	int j = 0;
 	int temp = 0;
 	cipherText.clear();
-	if (!decrypt) {
-		for (i = 0; i < blocks.size(); i++) {
-			temp = 0;
-			for (j = 0; j < blocks[i].size(); j++) {
-				cipherText.push_back(std::to_string(blocks[i][j])[0]);
-			}
-		}
-	}
-	else {
-		for (i = 0; i < blocks.size(); i++) {
-			temp = 0;
-			for (j = 0; j < blocks[i].size(); j++) {
-				temp |= blocks[i][j] * (int)pow(2, 7 - (j % 8));
+	for (i = 0; i < blocks.size(); i++) {
+		temp = 0;
+		for (j = 0; j < blocks[i].size(); j++) {
+			temp |= blocks[i][j] * (int)pow(2, 7 - (j % 8));
 
-				if ((j + 1) % 8 == 0) {
-					if(temp != 0) cipherText.push_back(temp);
-					temp = 0;
-				}
+			if ((j + 1) % 8 == 0) {
+				if(decrypt == 0 || (decrypt == 1 && temp != 0)) cipherText.push_back(temp);
+				temp = 0;
 			}
 		}
 	}
@@ -216,11 +206,11 @@ std::vector<std::vector<int>> DES::createKeySchedule(std::vector<int> key) {
 	return key;
 }
 
-std::vector<std::vector<int>> DES::convertPT(std::string nPlainText, int decrypt) {
+std::vector<std::vector<int>> DES::convertPT(std::string nPlainText) {
 	int i = 0;
 	std::vector<std::vector<int>> blocks;
 	std::vector<int> * binary = new std::vector<int>;
-	if (!decrypt) {
+	if (1) {
 		for (i = 0; i < (nPlainText.size() + 8 - nPlainText.size() % 8) * 8; i++) {
 			if (i != 0 && i % 64 == 0) {
 				blocks.push_back(*binary);
@@ -234,21 +224,6 @@ std::vector<std::vector<int>> DES::convertPT(std::string nPlainText, int decrypt
 				binary->push_back(0);
 		}
 		if (i - nPlainText.size() * 8 != 64) blocks.push_back(*binary);
-	}
-	else {
-		for (i = 0; i < nPlainText.size(); i++) {
-			if (i != 0 && i % 64 == 0) {
-				blocks.push_back(*binary);
-				binary = new std::vector<int>;
-			}
-			if ((int)nPlainText[i] - 48 != 0 && (int)nPlainText[i] - 48 != 1) {
-				blocks.clear();
-				return blocks;
-			}
-
-			binary->push_back((int)nPlainText[i] - 48);
-		}
-		blocks.push_back(*binary);
 	}
 
 	return blocks;

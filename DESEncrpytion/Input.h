@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <iterator>
 
 class Input {
 private:
@@ -20,14 +21,15 @@ Input::Input(std::string nInputFileStr) {
 }
 
 void Input::createPlainText() {
-	std::ifstream inputFile(inputFileStr);
+	std::ifstream inputFile(inputFileStr, std::ifstream::binary);
+	//if(decrypt) inputFile.open(inputFileStr, std::ifstream::binary);
+	//else inputFile.open(inputFileStr);
 	if (!inputFile) {
 		std::cout << "Unable to open input file!" << std::endl;
 		plainText = "";
 		return;
 	}
 	
-	std::stringstream tempStream;
-	tempStream << inputFile.rdbuf();
-	plainText = tempStream.str();
+	std::istreambuf_iterator<char> begin(inputFile), end;
+	plainText = std::string(begin, end);
 }

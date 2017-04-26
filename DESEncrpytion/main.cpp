@@ -11,14 +11,14 @@ int main(int argc, char* argv[]) {
 	int decrypt = 0;
 
 	if (argc != 5) {
-		std::cout << "Correct usage: DESEncryption plainTextFile/cipherTextFile cipherTextFile/plainTextFile key encrypt/decrypt(0/1)" << std::endl;
+		std::cout << "Correct usage: DESEncryption plainTextFile/cipherTextFile cipherTextFile/plainTextFile key encrypt/decrypt(e/d)" << std::endl;
 		return -1;
 	}
 
 	filePath = argv[1];
 	outFilePath = argv[2];
 	key = argv[3];
-	decrypt = strtol(argv[4], NULL, 10);
+	if (argv[4][0] == 'd') decrypt = 1;
 
 	//NOTE: IF DECRYPTING, IF THE INPUT FILE (CIPHERTEXTFILE) IS NOT PURE BINARY, THE OUTPUT WILL BE BLANK (as it should be)
 	Input newInput(filePath);
