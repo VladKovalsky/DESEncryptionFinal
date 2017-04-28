@@ -113,6 +113,8 @@
   <ItemGroup>
     <ClInclude Include="DES.h" />
     <ClInclude Include="Input.h" />
+    <ClInclude Include="IV.h" />
+    <ClInclude Include="Modes.h" />
     <ClInclude Include="Output.h" />
     <ClInclude Include="SideFunctions.h" />
   </ItemGroup>
