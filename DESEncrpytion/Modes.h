@@ -76,7 +76,7 @@ void Modes::CFB(std::vector<std::vector<int>> blocks, std::string key, int decry
 	else {
 		temp = IV(decrypt).getIVBlock();
 		for (i = 0; i < blocks.size(); i++) {
-			temp = DES(temp, key, decrypt).getEncryptedBlock();
+			temp = DES(temp, key, !decrypt).getEncryptedBlock();
 			temp = xorVector(temp, blocks[i]);
 			modeBlocks.push_back(temp);
 			temp = blocks[i];
