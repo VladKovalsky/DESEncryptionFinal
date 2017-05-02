@@ -8,6 +8,10 @@ private:
 	std::vector<std::vector<int>> modeBlocks;
 	void ECB(std::vector<std::vector<int>> blocks, std::string key, int decrypt);
 	void CBC(std::vector<std::vector<int>> blocks, std::string key, int decrypt);
+	void CFB(std::vector<std::vector<int>> blocks, std::string key, int decrypt);
+	void OFB(std::vector<std::vector<int>> blocks, std::string key, int decrypt);
+	void CTR(std::vector<std::vector<int>> blocks, std::string key, int decrypt);
+
 public:
 	Modes(char* type, std::vector<std::vector<int>> blocks, std::string key, int decrypt);
 	std::vector<std::vector<int>> getEncrypteBlocks() { return modeBlocks; };
@@ -19,6 +23,15 @@ Modes::Modes(char* type, std::vector<std::vector<int>> blocks, std::string key, 
 	}
 	else if (strcmp(type, "CBC") == 0 || strcmp(type, "cbc") == 0) {
 		CBC(blocks, key, decrypt);
+	}
+	else if (strcmp(type, "CFB") == 0 || strcmp(type, "cfb") == 0) {
+		CFB(blocks, key, decrypt);
+	}
+	else if (strcmp(type, "OFB") == 0 || strcmp(type, "ofb") == 0) {
+		OFB(blocks, key, decrypt);
+	}
+	else if (strcmp(type, "CTR") == 0 || strcmp(type, "ctr") == 0) {
+		CTR(blocks, key, decrypt);
 	}
 }
 void Modes::ECB(std::vector<std::vector<int>> blocks, std::string key, int decrypt) {
@@ -45,5 +58,49 @@ void Modes::CBC(std::vector<std::vector<int>> blocks, std::string key, int decry
 			modeBlocks.push_back(xorVector(DES(blocks[i], key, decrypt).getEncryptedBlock(), temp));
 			temp = blocks[i];
 		}
+	}
+}
+
+void Modes::CFB(std::vector<std::vector<int>> blocks, std::string key, int decrypt) {
+	int i = 0;
+	std::vector<int> temp;
+	
+	if (!decrypt) {
+		temp = IV(decrypt).getIVBlock();
+		for (i = 0; i < blocks.size(); i++) {
+			temp = DES(temp, key, decrypt).getEncryptedBlock();
+			temp = xorVector(temp, blocks[i]);
+			modeBlocks.push_back(temp);
+		}
+	}
+	else {
+		temp = IV(decrypt).getIVBlock();
+		for (i = 0; i < blocks.size(); i++) {
+			temp = DES(temp, key, decrypt).getEncryptedBlock();
+			temp = xorVector(temp, blocks[i]);
+			modeBlocks.push_back(temp);
+			temp = blocks[i];
+		}
+	}
+}
+
+
+void Modes::OFB(std::vector<std::vector<int>> blocks, std::string key, int decrypt) {
+	int i = 0;
+	std::vector<int> temp;
+		temp = IV(decrypt).getIVBlock();
+		for (i = 0; i < blocks.size(); i++) {
+			temp = DES(temp, key, decrypt).getEncryptedBlock();
+			modeBlocks.push_back(xorVector(temp, blocks[i]));
+		}
+}
+
+void Modes::CTR(std::vector<std::vector<int>> blocks, std::string key, int decrypt) {
+	int i = 0;
+	std::vector<int> temp;
+	temp = IV(decrypt).getIVBlock();
+	for (i = 0; i < blocks.size(); i++) {
+		temp = DES(temp, key, decrypt).getEncryptedBlock();
+		modeBlocks.push_back(xorVector(temp, blocks[i]));
 	}
 }
