@@ -18,12 +18,12 @@ std::vector<int> incrBin(std::vector<int> in) {
 	int i = 0;
 	std::vector<int> out = in;
 	for (i = 0; i < in.size(); i++) {
-		if (out[63 - i] == 0) {
-			out[63 - i] = 1;
+		if (out[i] == 0) {
+			out[i] = 1;
 			return out;
 		}
 		else {
-			out[63 - i] = 0;
+			out[i] = 0;
 		}
 	}
 	return out;
