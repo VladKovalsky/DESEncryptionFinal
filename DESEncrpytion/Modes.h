@@ -88,11 +88,11 @@ void Modes::CFB(std::vector<std::vector<int>> blocks, std::string key, int decry
 void Modes::OFB(std::vector<std::vector<int>> blocks, std::string key, int decrypt) {
 	int i = 0;
 	std::vector<int> temp;
-		temp = IV(decrypt).getIVBlock();
-		for (i = 0; i < blocks.size(); i++) {
-			temp = DES(temp, key, decrypt).getEncryptedBlock();
-			modeBlocks.push_back(xorVector(temp, blocks[i]));
-		}
+	temp = IV(decrypt).getIVBlock();
+	for (i = 0; i < blocks.size(); i++) {
+		temp = DES(temp, key, 0).getEncryptedBlock();
+		modeBlocks.push_back(xorVector(temp, blocks[i]));
+	}
 }
 
 void Modes::CTR(std::vector<std::vector<int>> blocks, std::string key, int decrypt) {
@@ -100,7 +100,7 @@ void Modes::CTR(std::vector<std::vector<int>> blocks, std::string key, int decry
 	std::vector<int> temp;
 	temp = IV(decrypt).getIVBlock();
 	for (i = 0; i < blocks.size(); i++) {
-		temp = DES(temp, key, decrypt).getEncryptedBlock();
-		modeBlocks.push_back(xorVector(temp, blocks[i]));
+		modeBlocks.push_back(xorVector(DES(temp, key, 0).getEncryptedBlock(), blocks[i]));
+		temp = incrBin(temp);
 	}
 }

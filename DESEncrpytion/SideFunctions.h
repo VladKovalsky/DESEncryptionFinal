@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <math.h>
 
 std::vector<int> xorVector(std::vector<int> in1, std::vector<int> in2) {
 	std::vector<int> out;
@@ -13,13 +14,18 @@ std::vector<int> xorVector(std::vector<int> in1, std::vector<int> in2) {
 	return out;
 }
 
-long long int convertToLarge(std::vector<int> in, int bitSize) {//doesn't work: needs typecasting to work ... whatever lol
+std::vector<int> incrBin(std::vector<int> in) {
 	int i = 0;
-	long long int out = 0;
-	for (i = in.size() - 1; i >= 0; i--) {
-		out += ((2 ^ bitSize - 1) & in.at(i)) << i * bitSize;
+	std::vector<int> out = in;
+	for (i = 0; i < in.size(); i++) {
+		if (out[63 - i] == 0) {
+			out[63 - i] = 1;
+			return out;
+		}
+		else {
+			out[63 - i] = 0;
+		}
 	}
-
 	return out;
 }
 
