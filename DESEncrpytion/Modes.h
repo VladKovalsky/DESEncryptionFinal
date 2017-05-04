@@ -1,47 +1,50 @@
 #pragma once
 #include "DES.h"
 #include "IV.h"
+#include "Key.h"
 #include "SideFunctions.h"
 
 class Modes {
 private:
+	std::vector<int> key;
 	std::vector<std::vector<int>> modeBlocks;
-	void ECB(std::vector<std::vector<int>> blocks, std::string key, int decrypt);
-	void CBC(std::vector<std::vector<int>> blocks, std::string key, int decrypt);
-	void CFB(std::vector<std::vector<int>> blocks, std::string key, int decrypt);
-	void OFB(std::vector<std::vector<int>> blocks, std::string key, int decrypt);
-	void CTR(std::vector<std::vector<int>> blocks, std::string key, int decrypt);
+	void ECB(std::vector<std::vector<int>> blocks, int decrypt);
+	void CBC(std::vector<std::vector<int>> blocks, int decrypt);
+	void CFB(std::vector<std::vector<int>> blocks, int decrypt);
+	void OFB(std::vector<std::vector<int>> blocks, int decrypt);
+	void CTR(std::vector<std::vector<int>> blocks, int decrypt);
 
 public:
-	Modes(char* type, std::vector<std::vector<int>> blocks, std::string key, int decrypt);
+	Modes(char* type, std::vector<std::vector<int>> blocks, int genKey, int decrypt);
 	std::vector<std::vector<int>> getEncrypteBlocks() { return modeBlocks; };
 };
 
-Modes::Modes(char* type, std::vector<std::vector<int>> blocks, std::string key, int decrypt) {
+Modes::Modes(char* type, std::vector<std::vector<int>> blocks, int genKey, int decrypt) {
+	key = Key(genKey).getKeyBlock();
 	if (strcmp(type, "ECB") == 0 || strcmp(type, "ecb") == 0) {
-		ECB(blocks, key, decrypt);
+		ECB(blocks, decrypt);
 	}
 	else if (strcmp(type, "CBC") == 0 || strcmp(type, "cbc") == 0) {
-		CBC(blocks, key, decrypt);
+		CBC(blocks, decrypt);
 	}
 	else if (strcmp(type, "CFB") == 0 || strcmp(type, "cfb") == 0) {
-		CFB(blocks, key, decrypt);
+		CFB(blocks, decrypt);
 	}
 	else if (strcmp(type, "OFB") == 0 || strcmp(type, "ofb") == 0) {
-		OFB(blocks, key, decrypt);
+		OFB(blocks, decrypt);
 	}
 	else if (strcmp(type, "CTR") == 0 || strcmp(type, "ctr") == 0) {
-		CTR(blocks, key, decrypt);
+		CTR(blocks, decrypt);
 	}
 }
-void Modes::ECB(std::vector<std::vector<int>> blocks, std::string key, int decrypt) {
+void Modes::ECB(std::vector<std::vector<int>> blocks, int decrypt) {
 	int i = 0;
 	for (i = 0; i < blocks.size(); i++) {
 		modeBlocks.push_back(DES(blocks[i], key, decrypt).getEncryptedBlock());
 	}
 }
 
-void Modes::CBC(std::vector<std::vector<int>> blocks, std::string key, int decrypt) {
+void Modes::CBC(std::vector<std::vector<int>> blocks, int decrypt) {
 	int i = 0;
 	std::vector<int> temp;
 	if (!decrypt) {
@@ -61,7 +64,7 @@ void Modes::CBC(std::vector<std::vector<int>> blocks, std::string key, int decry
 	}
 }
 
-void Modes::CFB(std::vector<std::vector<int>> blocks, std::string key, int decrypt) {
+void Modes::CFB(std::vector<std::vector<int>> blocks, int decrypt) {
 	int i = 0;
 	std::vector<int> temp;
 	
@@ -85,7 +88,7 @@ void Modes::CFB(std::vector<std::vector<int>> blocks, std::string key, int decry
 }
 
 
-void Modes::OFB(std::vector<std::vector<int>> blocks, std::string key, int decrypt) {
+void Modes::OFB(std::vector<std::vector<int>> blocks, int decrypt) {
 	int i = 0;
 	std::vector<int> temp;
 	temp = IV(decrypt).getIVBlock();
@@ -95,7 +98,7 @@ void Modes::OFB(std::vector<std::vector<int>> blocks, std::string key, int decry
 	}
 }
 
-void Modes::CTR(std::vector<std::vector<int>> blocks, std::string key, int decrypt) {
+void Modes::CTR(std::vector<std::vector<int>> blocks, int decrypt) {
 	int i = 0;
 	std::vector<int> temp;
 	temp = IV(decrypt).getIVBlock();

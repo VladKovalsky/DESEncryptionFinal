@@ -27,10 +27,9 @@ IV::IV(int decrypt) {
 }
 
 void IV::generateIV() {
-	srand(time(NULL));
 	int i = 0;
 	std::string textIV;
-	for(i = 0; i < 64; i++)
+	for(i = 0; i < 8; i++)
 		textIV.push_back(rand() % 256);
 
 	createBlockIV(textIV);

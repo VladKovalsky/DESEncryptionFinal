@@ -8,7 +8,6 @@ class DES {
 private:
 	std::vector<int> encryptedBlock;
 
-	std::vector<int> convertKey(std::string nKeyText);
 	std::vector<int> roundPerm(std::vector<int> left, std::vector<int> right, std::vector<std::vector<int>> keySchedule, int round, int keyRound, int decrypt);
 	std::vector<int> feistelFun(std::vector<int> halfBlack, std::vector<int> key);
 	
@@ -25,7 +24,7 @@ private:
 	std::vector<int> keyShift(std::vector<int>, int round);
 	std::vector<std::vector<int>> createKeySchedule(std::vector<int> key);
 public:
-	 DES(std::vector<int> block, std::string nKey, int decrypt);
+	 DES(std::vector<int> block, std::vector<int> key, int decrypt);
 	 std::vector<int> DES::getEncryptedBlock() { return encryptedBlock; };
 };
  std::vector<int> DES::PC1(std::vector<int> block) {
@@ -104,8 +103,7 @@ public:
 	return blockOut;
 }
 
-DES::DES(std::vector<int> block, std::string nKey, int decrypt) {
-	std::vector<int> key = convertKey(nKey);
+DES::DES(std::vector<int> block, std::vector<int> key, int decrypt) {
 	std::vector<std::vector<int>> keySchedule = createKeySchedule(key);
 
 	encryptedBlock = IP(block);
@@ -165,20 +163,6 @@ std::vector<std::vector<int>> DES::createKeySchedule(std::vector<int> key) {
 	key = leftKey;
 	key.insert(key.end(), rightKey.begin(), rightKey.end());
 
-	return key;
-}
-
- std::vector<int> DES::convertKey(std::string nKeyText) {
-	int i = 0;
-	std::vector<int> key;
-	for (i = 0; i < 64; i++) {
-
-		if (i < nKeyText.size() * 8) {
-			key.push_back(nKeyText.at(i / 8) >> (7 - (i % 8)) & 1);
-		}
-		else
-			key.push_back(0);
-	}
 	return key;
 }
 

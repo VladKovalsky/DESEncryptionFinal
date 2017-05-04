@@ -5,6 +5,7 @@
 #include <sstream>
 #include <iterator>
 #include <vector>
+#include "IC.h"
 
 class Input {
 private:
@@ -21,6 +22,7 @@ public:
 Input::Input(std::string nInputFileStr) {
 	inputFileStr = nInputFileStr;
 	std::string plainText = createPlainText();
+	std::cout << "IC of input text: " << calcIC(plainText) << std::endl;
 	convertPT(plainText);
 }
 

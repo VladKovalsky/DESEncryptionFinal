@@ -4,6 +4,8 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <iostream>
+#include "IC.h"
 
 class Output {
 private:
@@ -16,6 +18,7 @@ public:
 Output::Output(std::vector<std::vector<int>> outputBlocks, std::string filePath, int decrypt) {
 	std::ofstream outputFile(filePath, std::ofstream::binary);
 	blocksToString(outputBlocks, decrypt);
+	std::cout << "IC of output text: " << calcIC(outputText) << std::endl;
 	outputFile << outputText;
 }
 
